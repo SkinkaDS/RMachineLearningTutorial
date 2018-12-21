@@ -1,0 +1,143 @@
+---
+title: "Tutorial de Machine Learning com R"
+output: html_notebook
+---
+
+
+### Para começar, carregamos algumas libs e nossos dados
+
+
+```{r}
+library(tidyverse) #Funções de utilidade gerais para Data Science
+library(rpart) # para arvores de regressão
+library(randomForest) # para Random Forests
+
+melb_data <- read_csv("data/melb_data.csv") #Os dados
+
+melb_data <- na.omit(melb_data) #Removendo os valores nulos
+```
+
+
+### Sumarizando os dados
+
+```{r, echo=TRUE}
+summary(melb_data)
+```
+
+Cada 'chunk' da saída acima nos mostra uma colula dos dados. Para colunas não numéricas vemos apenas algumas informações básicas, como o seu tamanho. Para colunas númericas vemos algumas informações a mais, como média, mediana, os quartis, o mínimo e o máximo e a quantidade de NA's nos dados.
+
+### Construindo um Modelo
+
+Para construir um modelo preditivo precisamos
+
+ 1. Definir qual a variável alvo que queremos prever, chamada de Variável Dependente na estatistica. Para esse exemplo vamos usar o preço das residencias
+ 2. Definir qual  modelo usaremos para realizar a predição. Vamos começar com arvores de decisão
+ 3. Treinar o modelo
+ 4. Realizar predições utilizando o modelo
+ 5. Medir a acurácia do modelo
+ 
+```{r, echo=TRUE}
+fit <- rpart(Price ~ Rooms + Bathroom + Landsize + BuildingArea +
+             YearBuilt + Lattitude + Longtitude, data = melb_data)
+```
+
+
+Acima criamos nosso modelo, uma árvore de decisão. O primeiro parametro a formulá que a arvore de decisão utilizara, no nosso caso a formula indica que queremos prever nossa variável dependente (Preço) em função de algumas variáveis independentes (Quartos, banheiros, etc). O segundo parametro indica de onde vem os dados que o modelo utilizará no treino.
+
+
+Vamos dar uma olhada em como ficou
+
+```{r, echo=TRUE}
+plot(fit, uniform = TRUE) #Plota o gráfico da regressão
+text(fit, cex=.6) # Adiciona textos e legendas e os torna 60% maior que o default
+```
+
+
+### Predição
+
+
+Vamos utilizar nosso modelo de treino para realizar algumas predições
+
+```{r, echo=TRUE}
+print("6 primeiras casas:")
+print(head(melb_data))
+
+print("Predição para o preço das 6 primeiras casas ")
+print(predict(fit, head(melb_data)))
+
+print("O Preço real das 6 primeiras casas")
+print(head(melb_data$Price))
+```
+
+
+### Como saber se o nosso modelo é um bom modelo ?
+
+Existem muitas metricas que nos fornecem informações sobre a qualidade do nossos modelos. Começaremos com uma tecnica chamada MAE (Mean Absolute Error)
+
+Vamos definir um erro para cada predição de preços das casas como sendo:
+
+ ERROR = (Valor Real) - (Valor Predito)
+ 
+O MAE seria então média dos valores absolutos dos erros para cada observação.
+
+Veja como podemos usar o MAE no R
+
+```{r, echo=TRUE}
+library(modelr) #Pacote que contem a função MAE
+
+mae(model = fit, data = melb_data)
+```
+
+
+
+Mas existe um problema em coletarmos a métrica da forma que coletamos aqui. No mundo real vamos querer utilizar nosso modelo para dados que ainda não conhecemos, e aqui estamos calculando o MAE apenas para os dados que os nosso modelo já conhece.
+
+Para lidar com esse problema podemos dividir nosso conjunto de dados em treino e teste. Geralmente dividimos 70% para o conjunto de treino e 30% para o conjunto d teste.
+
+Utilizamos os dados de treino, como o proprio nome sugere para realizar toda a parte de treino do modelo, depois, utilizamos esse modelo para predizer os valores do conjunto de testes, que ele ainda nao conhece. A partir dos resultados sobre o conjunto de testes podemos realizar analises sobre como o nosso modelo está conseguindo lidar com dados que não conhece.
+
+No R podemos dividir o modelo em treino e teste utilizando o pacote modelr da seguinte forma
+
+```{r , echo=TRUE}
+#Dividindo os dados
+splitData <- resample_partition(melb_data, c(test = 0.3, train = 0.7))
+
+#Verificando quantos dados ficaram em cada um dos conjuntos
+lapply(splitData, dim)
+```
+
+Agora vamos treinar um novo modelo apenas com os dados de treino e aplicar o MAE com base nas predições dos dados de teste.
+
+```{r}
+fit2 <- rpart(Price ~ Rooms + Bathroom + Landsize + BuildingArea +
+             YearBuilt + Lattitude + Longtitude, data = splitData$train)
+
+mae(model = fit2, data = splitData$test)
+```
+
+### Overfitting e Underfitting
+
+Podemos exagerar durante o treinamento de nossos modelos e chegar em um ponto em que o nosso modelo descreve extremamente bem os dados de treino, porém não consegue generalizar nas predições de dados desconhecidos. Quando isso acontece podemos estar enfrentando um overfitting.
+
+No outro extremo, quando nosso modelo não cosegue ir bem nem nos dados de treino, é possivel que ele não tenha conseguido reconhecer nenhum padrão nos dados, chamamos isso de underfitting. Aqui vale tentar mudar os parametros do seu modelo ou talvez, trocar de modelo.
+
+
+### Tipos diferentes de modelo
+
+
+Existem vários tipos de modelos, vamos tentar um diferente dessa vez, o RandomForest.
+
+```{r, echo=TRUE}
+
+library(randomForest)
+
+fit.randomForest <- randomForest(Price ~ Rooms + Bathroom + Landsize +
+                                   BuildingArea + YearBuilt + Lattitude +
+                                   Longtitude, data = splitData$train)
+
+mae(model = fit.randomForest, data = splitData$test)
+
+```
+
+Comparando a métrica MAE dos dois modelos, podemos ver que o erro do random fores diminuiu bastante. Para outros dados pode acontecer o inverso, uma boa prática é tentar identificar quais os melhores modelos para o seu contexto.
+

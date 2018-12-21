@@ -1,0 +1,2 @@
+"0","fit <- rpart(Price ~ Rooms + Bathroom + Landsize + BuildingArea +"
+"0","             YearBuilt + Lattitude + Longtitude, data = melb_data)"

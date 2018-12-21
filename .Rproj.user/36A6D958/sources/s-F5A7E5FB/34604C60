@@ -1,0 +1,29 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1545393964182.000,
+    "dirty" : false,
+    "encoding" : "",
+    "folds" : "",
+    "hash" : "0",
+    "id" : "34604C60",
+    "lastKnownWriteTime" : 5292976843906638626,
+    "last_content_update" : 1545393964182,
+    "path" : null,
+    "project_path" : null,
+    "properties" : {
+        "cacheKey" : "3B8AF980",
+        "caption" : "melb_data",
+        "contentUrl" : "grid_resource/gridviewer.html?env=&obj=melb_data&cache_key=3B8AF980",
+        "displayedObservations" : 18396,
+        "environment" : "",
+        "object" : "melb_data",
+        "preview" : 0,
+        "totalObservations" : 18396,
+        "variables" : 22
+    },
+    "relative_order" : 2,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_dataframe"
+}

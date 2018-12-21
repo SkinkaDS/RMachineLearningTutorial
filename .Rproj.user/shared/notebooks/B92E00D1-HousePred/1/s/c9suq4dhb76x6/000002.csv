@@ -1,0 +1,6 @@
+"0","library(modelr) #Pacote que contem a função MAE"
+"0","mae(model = fit, data = melb_data)"
+"1","[1]"
+"1"," 276287.9"
+"1","
+"

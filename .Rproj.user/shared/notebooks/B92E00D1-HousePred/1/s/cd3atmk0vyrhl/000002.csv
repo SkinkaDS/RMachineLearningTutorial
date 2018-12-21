@@ -1,0 +1,7 @@
+"0","fit2 <- rpart(Price ~ Rooms + Bathroom + Landsize + BuildingArea +"
+"0","             YearBuilt + Lattitude + Longtitude, data = splitData$train)"
+"0","mae(model = fit2, data = splitData$test)"
+"1","[1]"
+"1"," 280862.2"
+"1","
+"
